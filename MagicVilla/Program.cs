@@ -1,4 +1,8 @@
-using MagicVilla.Logging;
+using MagicVilla;
+using MagicVilla.Data;
+using MagicVilla.Repository;
+using MagicVilla.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 //builder.Host.UseSerilog();
 #endregion
+builder.Services.AddDbContext<Context>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IVillaRepository, VillaRepository>();
+builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 builder.Services.AddControllers(options=>
 {
@@ -19,7 +30,7 @@ builder.Services.AddControllers(options=>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<ILogging, LoggingV2>();
+
 
 var app = builder.Build();
 
