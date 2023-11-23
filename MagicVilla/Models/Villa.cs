@@ -1,8 +1,11 @@
-﻿namespace MagicVilla.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MagicVilla.Models
 {
     public class Villa
     {
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
         public string Details { get; set; }
         public double Rate { get; set; }

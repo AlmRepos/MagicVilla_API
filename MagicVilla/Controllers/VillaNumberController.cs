@@ -2,8 +2,10 @@
 using MagicVilla.Models;
 using MagicVilla.Models.DTO;
 using MagicVilla.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace MagicVilla.Controllers
 {
@@ -30,7 +32,7 @@ namespace MagicVilla.Controllers
         {
             try
             {
-                IEnumerable<VillaNumber> villaNumbers = await repo.GetAllAsync();
+                IEnumerable<VillaNumber> villaNumbers = await repo.GetAllAsync(includeProperties:"Villa");
 
                 response.Result = mapper.Map<List<VillaNumberDTO>>(villaNumbers);
                 response.StatusCode = System.Net.HttpStatusCode.OK;
@@ -60,7 +62,7 @@ namespace MagicVilla.Controllers
                     response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     return BadRequest(response);
                 }
-                var villanumber = await repo.GetAsync(v => v.VillaNo == id);
+                var villanumber = await repo.GetAsync(v => v.VillaNo == id, includeProperties: "Villa");
 
                 if(villanumber == null)
                 {
@@ -81,6 +83,8 @@ namespace MagicVilla.Controllers
         }
 
 
+
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost(Name =("CreateVillaNumber"))]
@@ -90,13 +94,13 @@ namespace MagicVilla.Controllers
             {
                 if(await repo.GetAsync(v=>v.VillaNo == createDTO.VillaNo) != null)
                 {
-                    ModelState.AddModelError("CustomError", "VillaNumber Already Exist! ");
+                    ModelState.AddModelError("ErrorMessages", "VillaNumber Already Exist! ");
                     return BadRequest(ModelState);
                 }
 
                 if(await villaRepository.GetAsync(v=>v.Id == createDTO.VillaId) == null)
                 {
-                    ModelState.AddModelError("CustomError", "Villa Id is Invalid! ");
+                    ModelState.AddModelError("ErrorMessages", "Villa Id is Invalid! ");
                     return BadRequest(ModelState);
                 }
 
@@ -123,6 +127,7 @@ namespace MagicVilla.Controllers
 
 
 
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -160,6 +165,7 @@ namespace MagicVilla.Controllers
 
 
 
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("{id:int}",Name =("UpdateVillaNumber"))]
@@ -174,7 +180,7 @@ namespace MagicVilla.Controllers
                 }
                 if (await villaRepository.GetAsync(v => v.Id == updateDTO.VillaId) == null)
                 {
-                    ModelState.AddModelError("CustomError", "Villa Id is Invalid! ");
+                    ModelState.AddModelError("ErrorMessages", "Villa Id is Invalid! ");
                     return BadRequest(ModelState);
                 }
 
